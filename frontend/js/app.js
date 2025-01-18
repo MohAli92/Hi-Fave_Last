@@ -1,41 +1,16 @@
-document.getElementById('upload-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fileInput = document.getElementById('file-input');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const averageOutput = document.getElementById('average-output');
-
-    if (!fileInput.files.length) {
-        alert('Please select a file!');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-
-    loadingSpinner.style.display = 'block';
-    averageOutput.textContent = '';
-
+async function fetchObservations() {
     try {
-        const response = await fetch('http://localhost:3000/upload', {
-            method: 'POST',
-            body: formData,
-        });
-
+        const response = await fetch('http://localhost:3000/observations.json'); // رابط ملف JSON
         if (response.ok) {
             const data = await response.json();
-            const average = data.reduce((sum, obs) => sum + obs.valueQuantity.value, 0) / data.length;
-
-            averageOutput.textContent = `Average Value: ${average.toFixed(2)} mV`;
             updateChart(data);
         } else {
-            alert('Failed to process file.');
+            console.error('Failed to fetch observations.');
         }
     } catch (error) {
-        console.error('Error uploading file:', error);
-    } finally {
-        loadingSpinner.style.display = 'none';
+        console.error('Error fetching observations:', error);
     }
-});
+}
 
 function updateChart(data) {
     const chartContainer = d3.select("#chart-container");
@@ -77,3 +52,6 @@ function updateChart(data) {
         .attr("stroke-width", 1.5)
         .attr("d", line);
 }
+
+// استدعاء البيانات عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', fetchObservations);
