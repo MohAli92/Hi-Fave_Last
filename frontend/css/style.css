@@ -1,3 +1,4 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
     background-color: #000;
@@ -7,12 +8,108 @@ body {
     text-align: center;
 }
 
+/* Header */
 header {
     background-color: #333;
     color: white;
     padding: 1rem;
+    margin-bottom: 20px;
 }
 
+h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+nav a i {
+    margin-right: 8px; /* Adds space between icon and text */
+    font-size: 1.2rem;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Styling for Section Titles */
+h2 {
+    color: #00ff00; /* Light green color for section titles */
+    text-align: center; /* Center-align the titles */
+    margin-bottom: 20px; /* Add spacing below the titles */
+    font-size: 1.8rem; /* Adjust font size */
+}
+
+/* Styling for Paragraphs */
+p {
+    text-align: center;
+    margin: 0 auto 20px; /* Center-align paragraphs with spacing below */
+    max-width: 800px; /* Limit the width for better readability */
+    line-height: 1.6; /* Improve line spacing for readability */
+}
+
+/* Styling for Lists */
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    max-width: 800px; /* Adjusted width for better readability */
+    text-align: left;
+}
+
+li {
+    text-align: left; /* Align list items to the left */
+    font-size: 1rem; /* Adjust font size for list items */
+    margin: 10px 0;
+    padding-left: 20px; /* Add padding to indent items slightly */
+    border-bottom: 1px solid #333; /* Optional: Add a subtle separator */
+    padding-bottom: 5px; /* Add spacing below each item */
+}
+
+/* Contact Page Styling */
+li strong {
+    font-size: 1.2rem; /* Font size for names */
+    color: white; /* Keep names in white */
+    flex: 1; /* Ensure consistent spacing between name and email */
+}
+
+li span {
+    display: flex;
+    align-items: center; /* Align icon and text in the same line */
+}
+
+li span i {
+    font-size: 1rem; /* Size of the email icon */
+    color: #00ff00; /* Light green color for the icon */
+    margin-right: 8px; /* Space between the icon and email text */
+}
+
+li span a {
+    font-size: 0.9rem; /* Smaller font size for email addresses */
+    color: #00ff00; /* Light green for emails */
+    text-decoration: none;
+    white-space: nowrap; /* Prevent email addresses from wrapping to the next line */
+}
+
+li span a:hover {
+    text-decoration: underline; /* Add underline effect on hover */
+}
+
+/* File Upload Section */
 .file-upload {
     margin: 2rem auto;
     display: flex;
@@ -20,8 +117,11 @@ header {
     align-items: center;
 }
 
+input[type="file"] {
+    margin-bottom: 15px;
+}
+
 button {
-    margin-top: 10px;
     padding: 10px 20px;
     background-color: green;
     color: white;
@@ -34,12 +134,14 @@ button:hover {
     background-color: darkgreen;
 }
 
+/* Loading Spinner */
 #loading-spinner {
     margin-top: 20px;
     font-size: 1.2rem;
     color: yellow;
 }
 
+/* Output Section */
 #average-output {
     margin: 20px;
     font-size: 1.5rem;
@@ -47,6 +149,7 @@ button:hover {
     font-weight: bold;
 }
 
+/* Chart Container */
 #chart-container {
     margin: 20px auto;
     background: black;
@@ -54,4 +157,12 @@ button:hover {
     border-radius: 8px;
     padding: 10px;
     max-width: 800px;
+}
+
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 10px 0;
+    margin-top: 20px;
 }
