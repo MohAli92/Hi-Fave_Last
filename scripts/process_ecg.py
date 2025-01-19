@@ -4,6 +4,7 @@ import h5py
 import json
 from datetime import datetime, timedelta
 
+# ضبط الترميز الافتراضي
 sys.stdout.reconfigure(encoding='utf-8')
 
 def find_h5_file(data_dir="../data"):  
@@ -12,10 +13,13 @@ def find_h5_file(data_dir="../data"):
             return os.path.join(data_dir, file_name)
     raise FileNotFoundError("No .h5 file found in the data directory")
 
+# تحديد مسار ملف H5
 h5_file_path = sys.argv[1] if len(sys.argv) > 1 else find_h5_file()
 
+# تحديد المسار الأساسي للمشروع
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
+# مسار الإخراج النسبي
 output_json_path = os.path.join(base_dir, "output", "fhir_observations.json")
 
 print(f"Processing file: {h5_file_path}")
