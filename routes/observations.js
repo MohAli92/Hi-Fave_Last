@@ -5,7 +5,6 @@ const path = require('path');
 const router = express.Router();
 const outputDir = path.join(__dirname, '..', 'output');
 
-// Endpoint لاسترجاع جميع ملفات JSON
 router.get('/', (req, res) => {
     fs.readdir(outputDir, (err, files) => {
         if (err) {
@@ -18,7 +17,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// Endpoint لاسترجاع محتوى ملف JSON محدد
 router.get('/:fileName', (req, res) => {
     const fileName = req.params.fileName;
     const filePath = path.join(outputDir, fileName);
