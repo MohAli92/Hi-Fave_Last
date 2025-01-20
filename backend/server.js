@@ -1,3 +1,4 @@
+// Required imports
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -9,7 +10,6 @@ const WebSocket = require('ws');
 const CODESPACE_NAME = process.env.CODESPACE_NAME;
 const PORT = process.env.PORT || 3000;
 
-// Dynamically determine frontend URL
 const FRONTEND_URL = CODESPACE_NAME
     ? `https://5500-${CODESPACE_NAME}.app.github.dev`
     : 'http://localhost:5500';
@@ -27,15 +27,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 const app = express();
 
-// Enable CORS for frontend URL
+// Enable CORS
 app.use(cors({ origin: FRONTEND_URL }));
 
+// Serve frontend
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));
 
-const observationsRoutes = require('../routes/observations');
-app.use('/observations', observationsRoutes);
-
+// WebSocket server
 const wss = new WebSocket.Server({ noServer: true });
 
 wss.on('connection', (ws) => {
@@ -71,11 +70,11 @@ wss.on('connection', (ws) => {
     });
 });
 
+// File upload and processing
 app.post('/upload', upload.single('file'), (req, res) => {
     const filePath = req.file.path;
 
     const scriptPath = path.join(__dirname, '..', 'scripts', 'process_ecg.py');
-
     const command = `python "${scriptPath}" "${filePath}"`;
 
     exec(command, { cwd: path.join(__dirname, '..') }, (error, stdout, stderr) => {
@@ -97,6 +96,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     });
 });
 
+// Start the server
 const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
     if (CODESPACE_NAME) {

@@ -1,52 +1,55 @@
 import os
-import sys
-import h5py
 import json
+import numpy as np
 from datetime import datetime, timedelta
 
-sys.stdout.reconfigure(encoding='utf-8')
-
-def find_h5_file(data_dir="../data"):  
+def find_txt_file(data_dir="data"):
+    """Find the first .txt file in the specified directory."""
     for file_name in os.listdir(data_dir):
-        if file_name.endswith(".h5"):
+        if file_name.endswith(".txt"):
             return os.path.join(data_dir, file_name)
-    raise FileNotFoundError("No .h5 file found in the data directory")
+    raise FileNotFoundError("No .txt file found in the data directory")
 
-h5_file_path = sys.argv[1] if len(sys.argv) > 1 else find_h5_file()
+# Paths
+txt_file_path = find_txt_file("data") 
+output_json_path = os.path.join("output", "fhir_observations.json")
 
-base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-output_json_path = os.path.join(base_dir, "output", "fhir_observations.json")
-
-print(f"Processing file: {h5_file_path}")
-print(f"Output file will be saved to: {output_json_path}")
-
-def process_h5_to_fhir(h5_file_path, output_json_path):
-    try:
-        with h5py.File(h5_file_path, "r") as h5_file:
-            if "98:D3:21:FC:8B:12/raw" in h5_file:
-                raw_group = h5_file["98:D3:21:FC:8B:12/raw"]
-                ecg_data = raw_group["channel_2"][:].flatten()
-                sequence_numbers = raw_group["nSeq"][:].flatten()
-            elif "98:D3:21:FC:8B:12/support" in h5_file:
-                support_group = h5_file["98:D3:21:FC:8B:12/support/level_10/channel_2"]
-                ecg_data = support_group["mean"][:].flatten()
-                sequence_numbers = support_group["t"][:].flatten()
-            else:
-                raise KeyError("No suitable dataset found in the HDF5 file.")
-    except Exception as e:
-        print(f"Error reading HDF5 file: {e}")
-        return
-
-    sampling_rate = 100  
+def process_txt_to_fhir_with_metadata(txt_file_path, output_json_path):
+    """Process the OpenSignals text file and create a JSON file with detailed observations."""
+    with open(txt_file_path, "r") as file:
+        lines = file.readlines()
+        
+        
+        for line in lines:
+            if line.startswith("#"):
+                if line.startswith("# {"):
+                    metadata = json.loads(line[2:])
+                continue
+            break
+        
+        # Sampling rate and start time from metadata
+        sampling_rate = metadata["98:D3:21:FC:8B:12"]["sampling rate"]
+        start_date = metadata["98:D3:21:FC:8B:12"]["date"]
+        start_time = metadata["98:D3:21:FC:8B:12"]["time"]
+        start_datetime = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M:%S.%f")
+        
+        # Extract ECG data from column A2 (corresponds to the ECG channel in the file)
+        ecg_data = []
+        for line in lines:
+            if not line.startswith("#"):
+                values = line.strip().split('\t')
+                ecg_data.append(float(values[6]))  # Column 7 (index 6) is A2 (ECG data)
+        
+    # Time step calculation
     time_step = 1 / sampling_rate
-    start_time = datetime(2024, 12, 23)
-    timestamps = [start_time + timedelta(seconds=seq * time_step) for seq in sequence_numbers]
 
-    fhir_observations = [
-        {
+    # Create FHIR-compliant Observation resources
+    fhir_observations = []
+    for i, value in enumerate(ecg_data):
+        effective_time = start_datetime + timedelta(seconds=i * time_step)
+        fhir_observations.append({
             "resourceType": "Observation",
-            "id": str(int(seq_num)),
+            "id": str(i),
             "status": "final",
             "category": [
                 {
@@ -68,23 +71,22 @@ def process_h5_to_fhir(h5_file_path, output_json_path):
                 ]
             },
             "subject": {"reference": "Patient/1"},
-            "effectiveDateTime": timestamp.isoformat(),
+            "effectiveDateTime": effective_time.isoformat(),
             "valueQuantity": {
-                "value": float(ecg_data[i]),
+                "value": float(value),
                 "unit": "mV",
                 "system": "http://unitsofmeasure.org",
                 "code": "mV"
-            }
-        }
-        for i, (seq_num, timestamp) in enumerate(zip(sequence_numbers, timestamps))
-    ]
+            },
+            "samplingRate": sampling_rate
+        })
 
-    try:
-        os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
-        with open(output_json_path, "w", encoding="utf-8") as json_file:
-            json.dump(fhir_observations, json_file, indent=4, ensure_ascii=False)
-        print(f"FHIR observations saved to {output_json_path}")
-    except Exception as e:
-        print(f"Error saving JSON file: {e}")
+    # Save the observations as a JSON file
+    os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
+    with open(output_json_path, "w") as json_file:
+        json.dump(fhir_observations, json_file, indent=4)
 
-process_h5_to_fhir(h5_file_path, output_json_path)
+    print(f"FHIR observations with metadata saved to {output_json_path}")
+
+# Run the processing function
+process_txt_to_fhir_with_metadata(txt_file_path, output_json_path)

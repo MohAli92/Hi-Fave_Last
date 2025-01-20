@@ -15,7 +15,6 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     loadingSpinner.style.display = 'block';
     averageOutput.textContent = '';
 
-    // Dynamically determine the backend URL
     const BACKEND_URL =
         window.BACKEND_URL || window.location.origin.replace('5500', '3000');
 
@@ -27,11 +26,12 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
 
         if (response.ok) {
             const data = await response.json();
-            const average =
-                data.reduce((sum, obs) => sum + obs.valueQuantity.value, 0) /
-                data.length;
 
+            // Calculate the average value from observations
+            const average = data.reduce((sum, obs) => sum + obs.valueQuantity.value, 0) / data.length;
             averageOutput.textContent = `Average Value: ${average.toFixed(2)} mV`;
+
+            // Update chart with new data
             updateChart(data);
         } else {
             alert('Failed to process file.');
@@ -43,6 +43,7 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     }
 });
 
+// Chart function
 function updateChart(data) {
     const chartContainer = d3.select('#chart-container');
     chartContainer.selectAll('*').remove();
@@ -60,10 +61,7 @@ function updateChart(data) {
 
     const x = d3.scaleLinear().domain([0, data.length]).range([0, width]);
     const y = d3.scaleLinear()
-        .domain([
-            d3.min(data, (d) => d.valueQuantity.value),
-            d3.max(data, (d) => d.valueQuantity.value),
-        ])
+        .domain([d3.min(data, (d) => d.valueQuantity.value), d3.max(data, (d) => d.valueQuantity.value)])
         .range([height, 0]);
 
     svg.append('g')
